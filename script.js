@@ -1,53 +1,152 @@
-// Espera o conteúdo da página carregar completamente antes de executar o script.
-// É uma boa prática para evitar erros de JavaScript tentando acessar elementos
-// que ainda não existem na página.
-document.addEventListener('DOMContentLoaded', () => {
+const NOTES_KEY = 'minhaNota';
+const THEME_KEY = 'temaPreferencia';
+const SAVE_DELAY_MS = 250;
 
-    // 1. SELECIONANDO O ELEMENTO
-    // ----------------------------
-    // Primeiro, precisamos de uma referência ao nosso elemento <textarea>.
-    // Usamos 'document.getElementById' para pegar o elemento pelo 'id' que definimos no HTML.
-    const blocoDeNotas = document.getElementById('blocoDeNotas');
+function supportsLocalStorage() {
+    try {
+        const testKey = '__teste_localstorage__';
+        window.localStorage.setItem(testKey, testKey);
+        window.localStorage.removeItem(testKey);
+        return true;
+    } catch {
+        return false;
+    }
+}
 
-    // 2. CARREGANDO DADOS DO LOCALSTORAGE
-    // ------------------------------------
-    // O 'localStorage' é um recurso do navegador que permite salvar informações
-    // que persistem mesmo depois que o navegador é fechado.
-    // Usamos 'localStorage.getItem()' para buscar um item salvo.
-    // Aqui, estamos procurando por um item que salvamos com a chave 'minhaNota'.
-    const notaSalva = localStorage.getItem('minhaNota');
+function getSavedNote() {
+    try {
+        return window.localStorage.getItem(NOTES_KEY) ?? '';
+    } catch {
+        return '';
+    }
+}
 
-    // Verificamos se encontramos alguma nota salva.
-    if (notaSalva) {
-        // Se 'notaSalva' não for nulo (ou seja, existe algo salvo),
-        // nós colocamos o valor salvo de volta no nosso 'blocoDeNotas'.
-        blocoDeNotas.value = notaSalva;
+function saveNote(note) {
+    try {
+        window.localStorage.setItem(NOTES_KEY, note);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function getSavedTheme() {
+    try {
+        return window.localStorage.getItem(THEME_KEY);
+    } catch {
+        return null;
+    }
+}
+
+function saveTheme(theme) {
+    try {
+        window.localStorage.setItem(THEME_KEY, theme);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function resolveTheme(theme) {
+    if (theme === 'dark' || theme === 'light') {
+        return theme;
     }
 
-    // 3. ADICIONANDO UM 'EVENTLISTENER'
-    // ---------------------------------
-    // Agora, a parte principal: queremos fazer algo sempre que o usuário digitar.
-    // O 'addEventListener' é como um "ouvinte" que fica esperando por uma ação específica.
-    //
-    // Parâmetros do addEventListener:
-    //   - O primeiro é o TIPO DE EVENTO que queremos ouvir. 'input' é disparado
-    //     toda vez que o valor do <textarea> muda (ou seja, o usuário digita, apaga, etc).
-    //   - O segundo é a FUNÇÃO que será executada quando o evento acontecer.
-    //     Esta função é chamada de "callback".
-    blocoDeNotas.addEventListener('input', () => {
-        // 4. SALVANDO DADOS NO LOCALSTORAGE
-        // -----------------------------------
-        // Dentro da nossa função de callback, pegamos o valor atual do bloco de notas
-        // e o salvamos no localStorage.
-        // Usamos 'localStorage.setItem()' para isso.
-        //
-        // Parâmetros do setItem:
-        //   - O primeiro é a CHAVE (o "nome" do nosso dado). Usaremos a mesma chave 'minhaNota'.
-        //   - O segundo é o VALOR que queremos salvar. 'blocoDeNotas.value' contém o texto
-        //     que está atualmente na área de texto.
-        localStorage.setItem('minhaNota', blocoDeNotas.value);
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
 
-        console.log("Nota salva no localStorage!"); // Uma mensagem no console para fins de depuração.
-    });
+function updateThemeButton(currentTheme) {
+    const themeButton = document.getElementById('alternarTema');
+    if (!themeButton) {
+        return;
+    }
 
-});
+    themeButton.textContent = currentTheme === 'dark'
+        ? 'Ativar modo claro'
+        : 'Ativar modo escuro';
+}
+
+function applyTheme(themePreference) {
+    const resolvedTheme = resolveTheme(themePreference);
+    document.body.classList.toggle('dark-mode', resolvedTheme === 'dark');
+    updateThemeButton(resolvedTheme);
+}
+
+function toggleTheme() {
+    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+    saveTheme(nextTheme);
+}
+
+function debounce(callback, delay) {
+    let timerId;
+    return (...args) => {
+        clearTimeout(timerId);
+        timerId = window.setTimeout(() => callback(...args), delay);
+    };
+}
+
+function updateStatus(message, variant = 'info') {
+    const statusElement = document.getElementById('status');
+    if (!statusElement) {
+        return;
+    }
+
+    statusElement.textContent = message;
+    statusElement.dataset.variant = variant;
+}
+
+function handleNoteInput(event) {
+    const note = event.target.value;
+    const saved = saveNote(note);
+    updateStatus(saved ? 'Salvo automaticamente.' : 'Erro ao salvar. Verifique o armazenamento.');
+}
+
+function clearNote() {
+    const textarea = document.getElementById('blocoDeNotas');
+    if (!textarea) {
+        return;
+    }
+
+    textarea.value = '';
+    const saved = saveNote('');
+    updateStatus(saved ? 'Nota limpa e salva.' : 'Erro ao limpar a nota.');
+    textarea.focus();
+}
+
+function initNoteApp() {
+    const textarea = document.getElementById('blocoDeNotas');
+    const clearButton = document.getElementById('limparNota');
+
+    if (!textarea || !clearButton) {
+        return;
+    }
+
+    if (!supportsLocalStorage()) {
+        updateStatus('localStorage não está disponível. Sua nota não será salva.', 'warning');
+        return;
+    }
+
+    const themeButton = document.getElementById('alternarTema');
+    const savedTheme = getSavedTheme();
+
+    if (!textarea || !clearButton || !themeButton) {
+        return;
+    }
+
+    if (!supportsLocalStorage()) {
+        applyTheme('light');
+        updateStatus('localStorage não está disponível. Sua nota não será salva.', 'warning');
+        return;
+    }
+
+    textarea.value = getSavedNote();
+    textarea.addEventListener('input', debounce(handleNoteInput, SAVE_DELAY_MS));
+    clearButton.addEventListener('click', clearNote);
+    themeButton.addEventListener('click', toggleTheme);
+    applyTheme(savedTheme || 'auto');
+    updateStatus('Pronto para anotar.');
+}
+
+document.addEventListener('DOMContentLoaded', initNoteApp);

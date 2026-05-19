@@ -1,50 +1,157 @@
-/* Estilos gerais para a pÃ¡gina */
+:root {
+    --bg: #f0f2f5;
+    --surface: #ffffff;
+    --text: #333333;
+    --muted: #6c757d;
+    --border: #ced4da;
+    --primary: #007bff;
+    --primary-hover: #0056b3;
+    --status-info: #495057;
+    --status-warning: #d39e00;
+    --status-error: #dc3545;
+    --status-success: #198754;
+}
+
 body {
     font-family: sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
+    background-color: var(--bg);
+    color: var(--text);
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
     margin: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* O contÃªiner principal que centraliza nosso conteÃºdo */
+body.dark-mode {
+    background-color: #131418;
+    color: #e3e7ed;
+}
+
+/* O contêiner principal que centraliza nosso conteúdo */
 .container {
-    background-color: #ffffff;
+    background-color: var(--surface);
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
     width: 90%;
     max-width: 600px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+body.dark-mode .container {
+    background-color: #1e242e;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 h1 {
-    color: #007bff;
+    color: var(--primary);
+    transition: color 0.3s ease;
+}
+
+body.dark-mode h1 {
+    color: #7ab8ff;
 }
 
 p {
-    color: #6c757d;
+    color: var(--muted);
     margin-bottom: 20px;
 }
 
-/* Estilizando nossa Ã¡rea de texto (textarea) */
+body.dark-mode p {
+    color: #9aa5b8;
+}
+
+/* Estilizando nossa área de texto (textarea) */
 #blocoDeNotas {
     width: 100%;
-    height: 200px;
+    min-height: 200px;
     padding: 15px;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--border);
     border-radius: 4px;
     font-size: 16px;
     line-height: 1.5;
-    box-sizing: border-box; /* Garante que o padding nÃ£o aumente a largura total */
-    resize: vertical; /* Permite que o usuÃ¡rio redimensione a altura */
+    box-sizing: border-box; /* Garante que o padding não aumente a largura total */
+    resize: vertical; /* Permite que o usuário redimensione a altura */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body.dark-mode #blocoDeNotas {
+    background-color: #141a24;
+    border-color: #334155;
+    color: #e3e7ed;
 }
 
 #blocoDeNotas:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: var(--primary);
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+body.dark-mode #blocoDeNotas:focus {
+    box-shadow: 0 0 7px rgba(59, 130, 246, 0.5);
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 12px;
+}
+
+.action-group {
+    display: flex;
+    gap: 10px;
+}
+
+button#limparNota,
+button#alternarTema {
+    background-color: var(--primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 18px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+button#limparNota:hover,
+button#alternarTema:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+body.dark-mode button#limparNota,
+body.dark-mode button#alternarTema {
+    background-color: #334155;
+}
+
+body.dark-mode button#limparNota:hover,
+body.dark-mode button#alternarTema:hover {
+    background-color: #1f2937;
+}
+
+.status {
+    font-size: 14px;
+    color: var(--status-info);
+}
+
+body.dark-mode .status {
+    color: #cbd5e1;
+}
+
+.status[data-variant="warning"] {
+    color: var(--status-warning);
+}
+
+.status[data-variant="error"] {
+    color: var(--status-error);
+}
+
+.status[data-variant="success"] {
+    color: var(--status-success);
 }

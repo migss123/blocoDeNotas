@@ -11,7 +11,15 @@
     <div class="container">
         <h1>Bloco de Notas do Joédio</h1>
         <p>Suas anotações são salvas automaticamente no seu navegador.</p>
-        
+
+        <div class="actions">
+            <div class="action-group">
+                <button id="limparNota" type="button">Limpar nota</button>
+                <button id="alternarTema" type="button">Modo escuro</button>
+            </div>
+            <span id="status" class="status" data-variant="info">Carregando...</span>
+        </div>
+
         <textarea id="blocoDeNotas" placeholder="Comece a digitar aqui..."></textarea>
     </div>
 
